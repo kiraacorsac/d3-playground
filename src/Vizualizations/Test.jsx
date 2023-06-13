@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 
 export default function Test() {
 
-    const data = [3, 3, 4, -1, 8, 3, 3, -3, 4, 6, 2, 3];
+    const data = [1, 3, 4, 8, -5, 6, 2];
     var points = [[10, -45], [55, -90], [100, -15], [145, -65], [190, -55]];
     const otherData = [[0, 3], [1, 3], [2, 4], [3, -1], [4, 8], [5, -3], [6, 1], [7, 12], [8, 5], [9, 3], [10, -10]];
 
@@ -22,19 +22,16 @@ export default function Test() {
 
     const scaleChart = d3.scaleLinear()
         .domain([0, d3.max(data)])
-        .range([0, 250])
+        .range([0, 250]);
 
     const scaleAxisPositive = d3.scaleLinear()
         .domain([-d3.max(data), d3.max(data)])
-        .range([250, -250])
+        .range([250, -250]);
 
     const axisGenerator = d3.axisRight(scaleAxisPositive)
-        .ticks(10)
+        .ticks(10);
 
-    // const radarLine = d3.lineRadial()
-    //     .curve(d3.curveCardinalClosed)
-    //     .radius(function (d) { return rScale(d.value); })
-    //     .angle(function (d, i) { return i * angleSlice; });
+
 
 
     const svgRef = useRef(null);
@@ -80,13 +77,9 @@ export default function Test() {
 
 
 
-        // const line = d3.line()
-        //     .defined(d => d != null);
-
 
 
         const line = d3.line()
-            // .data(data.entries())
             .defined(d => d != null)
             .x(point => point[0] * shapeWidth)
             .y(point => (point[1] >= 0 ? (-scaleChart(point[1]) + 18) : (- scaleChart(point[1]) - 8)))
@@ -100,9 +93,6 @@ export default function Test() {
 
         d3.select("svg")
             .append("path")
-            // .data([points])
-            // .data(data)
-            // .data([data.entries()])
             .attr("d", line)
             .style("fill", "none")
             .style("stroke", "white")
@@ -114,12 +104,6 @@ export default function Test() {
 
         const path2 = canvas.append("g");
         path2
-            // .selectAll("path2")
-            // .data(data.entries())
-            // .join("path2")
-
-            // .data([otherData])
-            // .data([data.entries()])
             .append("path")
 
             .attr("d", line)
@@ -128,23 +112,6 @@ export default function Test() {
             .style("stroke-width", 3)
             .attr("transform", "translate(65, 850)")
 
-
-        // const path4 = canvas.append("line");
-        // path4
-        //     // .selectAll("path")
-        //     // .data(data.entries())
-        //     // .join("path")
-        //     .attr("fill", "none")
-        //     .style("stroke", "grey")
-        //     .style("stroke-width", 5)
-        //     .attr("x1", 10)
-        //     .attr("y1", -45)
-        //     .attr("x2", 200)
-        //     .attr("y2", -102)
-        //     // .attr("d", d3.line()
-        //     //     .x(point => point[0])
-        //     //     .y(point => point[1]))
-        //     .attr("transform", "translate(50, 350)")
 
         const circle = canvas.append("g");
         circle
@@ -211,30 +178,75 @@ export default function Test() {
 
             .text(d => d[1]);
 
-        // const polar = canvas.append("g")
-        // polar.append("path")
-        //     .attr("class", "radarStroke")
-        //     .attr("d", function (d, i) { console.log(radarLine(d)); return radarLine(d); })
-        //     .style("stroke-width", 3)
-        //     .style("stroke", "blue")
-        //     .style("fill", "none")
-        //     .style("filter", "url(#glow)");
+        const degToRad = (degrees) => {
+            console.log("radians", degrees * (Math.PI / (360 / 2)))
+            return degrees * (Math.PI / (360 / 2))
+        }
 
         const pie = d3.pie()
+            .padAngle(degToRad(2))
             .value(point => point[1])(data.entries());
 
+        // const pie = d3.pie()
+        //     .value(point => point[1])(data.entries());
+
+        const arcGenerator = d3.arc()
+            // .defined(d => d != null)
+            .innerRadius(110)
+            .outerRadius(150);
 
         const pieChart = canvas.append("g");
         pieChart
             .selectAll("pie")
-            .data(pie)
+            .data(pie.filter(function (pie) { return pie.data[1] > 0 }))
             .join("path")
-            .attr("d", d3.arc().innerRadius(0).outerRadius(150))
+            .attr("d", arcGenerator)
             .attr("transform", "translate(750, 245)")
             .style("fill", color)
-            .style("stroke", "lightgrey")
-            .style("stroke-width", 3)
+            .style("stroke", "grey")
+            .style("stroke-width", 1)
 
+        console.log("pie value:", pie)
+
+
+        const pieAnnotation = canvas.append("g");
+        pieAnnotation
+            .selectAll("text")
+            .data(pie.filter(function (pie) { return pie.data[1] > 0 }))
+            .join("text")
+            .attr("fill", "lightgrey")
+            .attr("font-size", 20)
+            .attr("font-weight", "bold")
+            .attr("d", arcGenerator)
+            .attr("x", d => arcGenerator.centroid(d)[0])
+            .attr("y", d => arcGenerator.centroid(d)[1])
+            .attr("transform", "translate(745, 250)")
+
+            .text(d => d.data[1])
+
+
+        console.log("pie annotation:", pieAnnotation)
+
+
+
+
+        const radarAnnotation = canvas.append("g");
+        radarAnnotation
+            .selectAll("text")
+            .data(pie.sort(() => { }).filter(function (pie) { return pie.data[1] > 0 }))
+            .join("text")
+            .attr("fill", "white")
+            .attr("font-size", 20)
+            .attr("font-weight", "bold")
+            .attr("d", arcGenerator)
+            .attr("x", d => arcGenerator.centroid(d)[0] * d.data[1] / 4)
+            .attr("y", d => arcGenerator.centroid(d)[1] * d.data[1] / 4)
+            .attr("transform", "translate(745, 800)")
+
+            .text(d => d.data[1])
+
+
+        console.log("radar annotation:", radarAnnotation)
 
 
     }, [svgRef.current])
