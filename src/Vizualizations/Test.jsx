@@ -97,31 +97,20 @@ export default function Test() {
             .attr("stroke-width", shapeWidth / 30)
             .attr("transform", "translate(50, 350)")
             // .on("mouseover", function () {
-
             //     if (d3.select(this).style("fill") !== "white") {
             //         d3.select(this).style("fill", "white");
-            //         console.log("Inside Gate 2");
             //     };
-            //     // selectedList = [];
-            //     // console.log("In done");
-            //     // console.log("Inside the MouseIn, value of selected at end of cycle: ", selected);
-            //     // console.log("Inside the MouseIn, selectedList at end of cycle: ", selectedList);
             // })
 
             // .on("mouseout", function () {
-
-
             //     if (d3.select(this).style("fill") === "white") {
             //         let elemColor = point => data[point[0]] > 0 ? "teal" : "olive";
-
             //         d3.select(this).style("fill", "white");
-
             //         setTimeout(() => {
             //             d3.select(this).style("fill", elemColor);
             //         }, 150);
-            //         console.log("Inside Gate 3");
             //     };
-            //     console.log("Out done");
+
             // })
 
             .on("click", function () {
@@ -277,11 +266,31 @@ export default function Test() {
             .attr("d", arcGenerator)
             .attr("transform", "translate(750, 245)")
             .style("fill", function (point) {
-                console.log("Point", point)
+                // console.log("Point", point)
                 if (selected.includes(point.data[0])) {
                     return "white"
                 }
                 return color(point.data[1])
+            })
+            .on("click", function (point) {
+                let selectedList = selected.slice();
+                console.log("point", point)
+                console.log("this", d3.select(this).data()[0].data[0])
+                console.log("this point", d3.select(this).data()[0].data[1])
+                console.log("Is datapoint ", d3.select(this).data()[0].data[1], " missing from the list ? ", !selectedList.includes(d3.select(this).data()[0].data[0]))
+                if (!selectedList.includes(d3.select(this).data()[0].data[0])) {
+                    selectedList.push(d3.select(this).data()[0].data[0]);
+                    console.log("list as set in selected", selectedList);
+                }
+                else {
+
+                    let tobeRemoved = selectedList.indexOf(d3.select(this).data()[0].data[0]);
+                    selectedList.splice(tobeRemoved, 1);
+                }
+
+                setSelected(selectedList);
+                console.log("Datapoint ", d3.select(this).data()[0].data[0], " has been added.");
+                console.log("Inside the MouseIn Gate 1, value of selected at end of IF: ", selected);
             })
             .style("stroke", "grey")
             .style("stroke-width", 1)
