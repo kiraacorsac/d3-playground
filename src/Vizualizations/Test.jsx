@@ -129,7 +129,7 @@ export default function Test() {
                 }
 
                 setSelected(selectedList);
-                console.log("Datapoint ", d3.select(this).data()[0][0], " has been added.");
+                console.log("Datapoint ", d3.select(this).data()[0][0], " has been amended.");
                 console.log("Inside the MouseIn Gate 1, value of selected at end of IF: ", selected);
             })
 
@@ -289,7 +289,7 @@ export default function Test() {
                 }
 
                 setSelected(selectedList);
-                console.log("Datapoint ", d3.select(this).data()[0].data[0], " has been added.");
+                console.log("Datapoint ", d3.select(this).data()[0].data[0], " has been amended.");
                 console.log("Inside the MouseIn Gate 1, value of selected at end of IF: ", selected);
             })
             .style("stroke", "grey")
