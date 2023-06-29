@@ -1,28 +1,46 @@
 import * as d3 from "d3";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Test() {
 
-    const data = [1, 3, 4, 8, -5, 6, 2];
-    var points = [[10, -45], [55, -90], [100, -15], [145, -65], [190, -55]];
-    const otherData = [[0, 3], [1, 3], [2, 4], [3, -1], [4, 8], [5, -3], [6, 1], [7, 12], [8, 5], [9, 3], [10, -10]];
+    // const data = [1, 5, -1, 1, 5, -1];
 
-    console.log("data", data);
-    console.log("data entries", data.entries());
+    const [number, setNumber] = useState(null);
+    const [selected, setSelected] = useState([]);
+    const [data, setData] = useState([4, 5, 6]);
+
+
+
+    function handleNumberSet(event) {
+
+        let newNumber = parseInt(event.target.value);
+
+        setNumber(newNumber);
+
+    }
+
+    function handleElementAdd() {
+        let newData = data.slice();
+        newData.push(number);
+        setData(newData);
+        setNumber("");
+    }
+
 
     var color = d3.scaleOrdinal().domain(data).range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"])
 
+
     const dataAbsolute = data.map((p) => Math.abs(p));
 
-    for (const i in data) {
-        console.log("i, v pair:", i, data[i])
-    };
 
-    console.log("dataAbsolute", dataAbsolute);
+
+
+    let maxAxisAmplitude = d3.max(dataAbsolute)
 
     const scaleChart = d3.scaleLinear()
         .domain([0, d3.max(data)])
         .range([0, 250]);
+
 
     const scaleAxisPositive = d3.scaleLinear()
         .domain([-d3.max(data), d3.max(data)])
@@ -46,7 +64,6 @@ export default function Test() {
             .select(svgRef.current)
             .attr("width", innerWidth)
             .attr("height", innerHeight)
-        // .attr("transform", "translate(0, 250)")
 
         canvas
             .selectAll("*")
@@ -60,8 +77,6 @@ export default function Test() {
             .call(axisGenerator)
             .attr("transform", "translate(50, 350)")
 
-
-
         rect.selectAll("rect")
             .data(dataAbsolute.entries())
 
@@ -74,10 +89,50 @@ export default function Test() {
             .attr("stroke", "#111")
             .attr("stroke-width", shapeWidth / 30)
             .attr("transform", "translate(50, 350)")
+            .on("mouseover", function () {
+                let selectedList = selected.slice();
+                console.log("Is datapoint ", d3.select(this).data()[0][0], " missing from the list ? ", !selectedList.includes(d3.select(this).data()[0][0]))
+                if (!selectedList.includes(d3.select(this).data()[0][0])) {
+                    selectedList.push(d3.select(this).data()[0][0]);
+                    console.log("list as set in selected", selectedList)
+                    setSelected(selectedList);
+                    console.log("Datapoint ", d3.select(this).data()[0][0], " has been added.");
+                    console.log("Inside the MouseIn Gate 1, value of selected at end of IF: ", selected);
+                };
+                if (d3.select(this).style("fill") !== "white") {
+                    d3.select(this).style("fill", "white");
+                    console.log("Inside Gate 2");
+                };
+                selectedList = [];
+                console.log("In done");
+                console.log("Inside the MouseIn, value of selected at end of cycle: ", selected);
+                console.log("Inside the MouseIn, selectedList at end of cycle: ", selectedList);
+            })
 
+            .on("mouseout", function () {
+                console.log("MouseOut starting");
+                let otherSelectedList = selected.slice();
+                let tobeRemoved = otherSelectedList.indexOf(d3.select(this).data()[0][0]);
+                otherSelectedList.splice(tobeRemoved, 1);
+                console.log("Selected List as pushed", otherSelectedList);
+                setSelected(otherSelectedList);
+                console.log("Pos ", tobeRemoved, " with Datapoint ", d3.select(this).data()[0][0], " should have been removed.");
+                console.log("Selected after removal", selected);
 
+                if (d3.select(this).style("fill") === "white") {
+                    let elemColor = point => data[point[0]] > 0 ? "teal" : "olive";
 
+                    d3.select(this).style("fill", "white");
 
+                    setTimeout(() => {
+                        d3.select(this).style("fill", elemColor);
+                    }, 150);
+                    console.log("Inside Gate 3");
+                };
+                console.log("Out done");
+            })
+
+        console.log("Outside the function Selected List: ", selected);
 
         const line = d3.line()
             .defined(d => d != null)
@@ -87,10 +142,6 @@ export default function Test() {
             ;
 
 
-        for (const [key, value] of data.entries()) {
-            console.log("key, value", key, value);
-        }
-
         d3.select("svg")
             .append("path")
             .attr("d", line)
@@ -99,8 +150,6 @@ export default function Test() {
             .style("stroke-width", 3)
             .attr("transform", "translate(65, 350)")
 
-
-        console.log("carambar", line)
 
         const path2 = canvas.append("g");
         path2
@@ -179,7 +228,6 @@ export default function Test() {
             .text(d => d[1]);
 
         const degToRad = (degrees) => {
-            console.log("radians", degrees * (Math.PI / (360 / 2)))
             return degrees * (Math.PI / (360 / 2))
         }
 
@@ -187,13 +235,27 @@ export default function Test() {
             .padAngle(degToRad(2))
             .value(point => point[1])(data.entries());
 
-        // const pie = d3.pie()
-        //     .value(point => point[1])(data.entries());
+
+        const polarPie = d3.pie()
+            .sort(null)
+
+            .value(point => point[1])(data.entries());
 
         const arcGenerator = d3.arc()
-            // .defined(d => d != null)
             .innerRadius(110)
             .outerRadius(150);
+
+        const polarAngle = (data) => {
+            return (2 * Math.PI / data.length);
+        }
+
+
+
+        const polarArcGenerator = d3.arc()
+            .innerRadius(110)
+            .outerRadius(150)
+            .startAngle(point => point.data[0] * polarAngle(data))
+            .endAngle(point => point.data[0] * polarAngle(data) + polarAngle(data));
 
         const pieChart = canvas.append("g");
         pieChart
@@ -205,8 +267,6 @@ export default function Test() {
             .style("fill", color)
             .style("stroke", "grey")
             .style("stroke-width", 1)
-
-        console.log("pie value:", pie)
 
 
         const pieAnnotation = canvas.append("g");
@@ -225,31 +285,119 @@ export default function Test() {
             .text(d => d.data[1])
 
 
-        console.log("pie annotation:", pieAnnotation)
 
 
+
+        const polarLine = d3.line()
+            .defined(d => d != null)
+            .x(d => (polarArcGenerator.centroid(d)[0] + (polarArcGenerator.centroid(d)[0] * (d.data[1] / maxAxisAmplitude))) / 2)
+            .y(d => (polarArcGenerator.centroid(d)[1] + (polarArcGenerator.centroid(d)[1] * (d.data[1] / maxAxisAmplitude))) / 2)
+            .curve(d3.curveCatmullRomClosed)(polarPie)
+
+
+        const radarNegative = canvas.append("g");
+        radarNegative
+            .append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", 65)
+            .attr("fill", "red")
+            .attr("fill-opacity", "0.3")
+            .attr("stroke-width", 3)
+            .attr("transform", "translate(745, 800)")
+
+
+        const polarPath = canvas.append("g");
+        polarPath
+            .append("path")
+            .attr("d", polarLine)
+            .style("fill", "lightblue")
+            .style("stroke", "teal")
+            .style("stroke-width", 2)
+            .attr("transform", "translate(745, 800)")
+
+
+
+        const radarZero = canvas.append("g");
+        radarZero
+            .append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", 65)
+            .attr("fill", "none")
+            .attr("stroke-width", 1)
+            .attr("stroke", "red")
+            .attr("transform", "translate(745, 800)")
+
+
+
+        const radarLabels = canvas.append("g");
+        radarLabels
+            .selectAll("text")
+
+            .data(polarPie)
+
+            .join("text")
+            .attr("fill", "teal")
+            .attr("font-size", 14)
+            .attr("font-weight", "bold")
+            .attr("d", polarArcGenerator)
+            .attr("x", d => (polarArcGenerator.centroid(d)[0] * 1.3))
+            .attr("y", d => (polarArcGenerator.centroid(d)[1] * 1.3))
+            .attr("transform", "translate(720, 810)")
+            .text(d => `Pos ${d.data[0]}`)
+
+        const radarMax = canvas.append("g");
+        radarMax
+            .append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", 130)
+            .attr("fill", "none")
+            .attr("stroke-width", 1)
+            .attr("stroke", "gray")
+            .attr("transform", "translate(745, 800)")
+
+
+
+        const radarAxes = canvas.append("g");
+
+        radarAxes
+
+            .selectAll("line")
+            .data(polarPie)
+            .join("line")
+            .style("stroke", "gray")
+            .attr("stroke-width", 0.4)
+            .attr("d", polarArcGenerator)
+            .attr("x1", 0)
+            .attr("x2", 0)
+            .attr("x2", d => (polarArcGenerator.centroid(d)[0]))
+            .attr("y2", d => (polarArcGenerator.centroid(d)[1]))
+
+            .attr("transform", "translate(745, 800)")
 
 
         const radarAnnotation = canvas.append("g");
         radarAnnotation
             .selectAll("text")
-            .data(pie.sort(() => { }).filter(function (pie) { return pie.data[1] > 0 }))
+            .data(polarPie)
             .join("text")
             .attr("fill", "white")
-            .attr("font-size", 20)
+            .attr("font-size", 16)
             .attr("font-weight", "bold")
-            .attr("d", arcGenerator)
-            .attr("x", d => arcGenerator.centroid(d)[0] * d.data[1] / 4)
-            .attr("y", d => arcGenerator.centroid(d)[1] * d.data[1] / 4)
+            .attr("d", polarArcGenerator)
+            .attr("x", d => (polarArcGenerator.centroid(d)[0] + (polarArcGenerator.centroid(d)[0] * (d.data[1] / maxAxisAmplitude))) / 2)
+            .attr("y", d => (polarArcGenerator.centroid(d)[1] + (polarArcGenerator.centroid(d)[1] * (d.data[1] / maxAxisAmplitude))) / 2)
             .attr("transform", "translate(745, 800)")
-
             .text(d => d.data[1])
 
 
-        console.log("radar annotation:", radarAnnotation)
 
+    }, [svgRef.current, data, selected])
 
-    }, [svgRef.current])
-
-    return <svg ref={svgRef} />;
+    return (<><svg ref={svgRef} />
+        <input type="number" onChange={handleNumberSet} value={number}></input>
+        <button onClick={handleElementAdd}>Add</button>
+    </>);
 }
