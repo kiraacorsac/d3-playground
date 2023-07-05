@@ -30,6 +30,8 @@ export default function Test() {
     var color = d3.scaleOrdinal().domain(data).range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"])
 
 
+
+
     const dataAbsolute = data.map((p) => Math.abs(p));
 
 
@@ -64,6 +66,7 @@ export default function Test() {
             .select(svgRef.current)
             .attr("width", innerWidth)
             .attr("height", innerHeight)
+
 
         canvas
             .selectAll("*")
@@ -401,9 +404,7 @@ export default function Test() {
             .attr("x2", 0)
             .attr("x2", d => (polarArcGenerator.centroid(d)[0]))
             .attr("y2", d => (polarArcGenerator.centroid(d)[1]))
-
             .attr("transform", "translate(745, 800)")
-
 
         const radarAnnotation = canvas.append("g");
         radarAnnotation
@@ -421,7 +422,9 @@ export default function Test() {
 
 
 
-    }, [svgRef.current, data, selected])
+
+    }
+        , [svgRef.current, data, selected])
 
     return (<><svg ref={svgRef} />
         <input type="number" onChange={handleNumberSet} value={number}></input>
