@@ -46,10 +46,14 @@ export default function Test() {
 
     const scaleAxisPositive = d3.scaleLinear()
         .domain([-d3.max(data), d3.max(data)])
-        .range([250, -250]);
+        .range([250, -250])
+
+        ;
 
     const axisGenerator = d3.axisRight(scaleAxisPositive)
-        .ticks(10);
+        .ticks(10)
+        // .stroke("#E04836")
+        ;
 
 
 
@@ -66,6 +70,7 @@ export default function Test() {
             .select(svgRef.current)
             .attr("width", innerWidth)
             .attr("height", innerHeight)
+            .style("background-color", "black")
 
 
         canvas
@@ -78,16 +83,25 @@ export default function Test() {
 
         const axis = canvas.append("g")
             .call(axisGenerator)
+            .style("stroke", "lightgrey")
+            // .style("line", "white")
             .attr("transform", "translate(50, 350)")
+
+        axis.selectAll("line")
+            .style("stroke", "grey")
+
+        axis.selectAll(".domain")
+            .style("stroke", "grey")
 
         rect.selectAll("rect")
             .data(dataAbsolute.entries())
 
             .join("rect")
             .attr("x", point => point[0] * shapeWidth)
-            .attr("y", point => data[point[0]] > 0 ? -scaleChart(point[1]) : 0)
+            .attr("y", 0)
             .attr("width", shapeWidth)
-            .attr("height", point => scaleChart(point[1]))
+            .attr("height", 0)
+            .attr("fill", "black")
             .attr("fill", function (point) {
                 if (selected.includes(point[0])) {
                     return "white"
@@ -98,23 +112,9 @@ export default function Test() {
 
             .attr("stroke", "#111")
             .attr("stroke-width", shapeWidth / 30)
+
             .attr("transform", "translate(50, 350)")
-            // .on("mouseover", function () {
-            //     if (d3.select(this).style("fill") !== "white") {
-            //         d3.select(this).style("fill", "white");
-            //     };
-            // })
 
-            // .on("mouseout", function () {
-            //     if (d3.select(this).style("fill") === "white") {
-            //         let elemColor = point => data[point[0]] > 0 ? "teal" : "olive";
-            //         d3.select(this).style("fill", "white");
-            //         setTimeout(() => {
-            //             d3.select(this).style("fill", elemColor);
-            //         }, 150);
-            //     };
-
-            // })
 
             .on("click", function () {
                 let selectedList = selected.slice();
@@ -135,6 +135,25 @@ export default function Test() {
                 console.log("Datapoint ", d3.select(this).data()[0][0], " has been amended.");
                 console.log("Inside the MouseIn Gate 1, value of selected at end of IF: ", selected);
             })
+            .transition()
+            .attr("height", point => scaleChart(point[1]))
+            .attr("y", point => data[point[0]] > 0 ? -scaleChart(point[1]) : 0)
+            .style("fill", function (point) {
+                if (selected.includes(point[0])) {
+                    return "white"
+                };
+                return (data[point[0]] > 0 ? "teal" : "olive")
+
+            })
+            .duration(1200)
+
+            .delay(function (point) { return (250 + Math.abs(point[0] * 200)) })
+            .ease(d3.easeCubicInOut)
+
+
+
+
+
 
         console.log("Outside the function Selected List: ", selected);
 
@@ -161,7 +180,7 @@ export default function Test() {
 
             .attr("d", line)
             .style("fill", "none")
-            .style("stroke", "green")
+            .style("stroke", "#17becf")
             .style("stroke-width", 3)
             .attr("transform", "translate(65, 850)")
 
@@ -207,7 +226,29 @@ export default function Test() {
             .attr("cx", point => point[0] * shapeWidth + (shapeWidth / 2))
             .attr("cy", point => point[1] >= 0 ? (-scaleChart(point[1]) + 18) : (- scaleChart(point[1]) - 8))
             .attr("r", 10)
-            .attr("fill", "black")
+            // .attr("fill", "black")
+            .style("fill", function (point) {
+                console.log("Point Circle", point)
+                if (selected.includes(point[0])) {
+                    return "red"
+                }
+                return "black"
+            })
+            .on("click", function (point) {
+                let selectedList = selected.slice();
+                console.log("this", d3.select(this).data()[0][0])
+                if (!selectedList.includes(d3.select(this).data()[0][0])) {
+                    selectedList.push(d3.select(this).data()[0][0]);
+
+                }
+                else {
+
+                    let tobeRemoved = selectedList.indexOf(d3.select(this).data()[0][0]);
+                    selectedList.splice(tobeRemoved, 1);
+                }
+
+                setSelected(selectedList);
+            })
             .attr("transform", "translate(50, 845)")
 
 
@@ -259,7 +300,8 @@ export default function Test() {
             .innerRadius(110)
             .outerRadius(150)
             .startAngle(point => point.data[0] * polarAngle(data))
-            .endAngle(point => point.data[0] * polarAngle(data) + polarAngle(data));
+            .endAngle(point => point.data[0] * polarAngle(data) + polarAngle(data))
+            ;
 
         const pieChart = canvas.append("g");
         pieChart
@@ -277,13 +319,9 @@ export default function Test() {
             })
             .on("click", function (point) {
                 let selectedList = selected.slice();
-                console.log("point", point)
-                console.log("this", d3.select(this).data()[0].data[0])
-                console.log("this point", d3.select(this).data()[0].data[1])
-                console.log("Is datapoint ", d3.select(this).data()[0].data[1], " missing from the list ? ", !selectedList.includes(d3.select(this).data()[0].data[0]))
                 if (!selectedList.includes(d3.select(this).data()[0].data[0])) {
                     selectedList.push(d3.select(this).data()[0].data[0]);
-                    console.log("list as set in selected", selectedList);
+
                 }
                 else {
 
@@ -292,8 +330,7 @@ export default function Test() {
                 }
 
                 setSelected(selectedList);
-                console.log("Datapoint ", d3.select(this).data()[0].data[0], " has been amended.");
-                console.log("Inside the MouseIn Gate 1, value of selected at end of IF: ", selected);
+
             })
             .style("stroke", "grey")
             .style("stroke-width", 1)
@@ -332,8 +369,9 @@ export default function Test() {
             .attr("cy", 0)
             .attr("r", 65)
             .attr("fill", "red")
-            .attr("fill-opacity", "0.3")
-            .attr("stroke-width", 3)
+            .attr("fill-opacity", "0.5")
+            // .attr("stroke-opacity", "0.5")
+            // .attr("stroke-width", 3)
             .attr("transform", "translate(745, 800)")
 
 
@@ -341,12 +379,11 @@ export default function Test() {
         polarPath
             .append("path")
             .attr("d", polarLine)
-            .style("fill", "lightblue")
-            .style("stroke", "teal")
-            .style("stroke-width", 2)
+            .style("fill", "#17becf")
+            .style("fill-opacity", "0.65")
+            .style("stroke", "#17becf")
+            .style("stroke-width", 3)
             .attr("transform", "translate(745, 800)")
-
-
 
         const radarZero = canvas.append("g");
         radarZero
@@ -357,7 +394,10 @@ export default function Test() {
             .attr("fill", "none")
             .attr("stroke-width", 1)
             .attr("stroke", "red")
+            .attr("stroke-opacity", "0.5")
             .attr("transform", "translate(745, 800)")
+
+
 
 
 
@@ -368,7 +408,7 @@ export default function Test() {
             .data(polarPie)
 
             .join("text")
-            .attr("fill", "teal")
+            .attr("fill", "grey")
             .attr("font-size", 14)
             .attr("font-weight", "bold")
             .attr("d", polarArcGenerator)
