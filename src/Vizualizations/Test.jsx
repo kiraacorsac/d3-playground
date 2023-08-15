@@ -3,11 +3,13 @@ import { useEffect, useRef, useState } from "react";
 
 export default function Test() {
 
-    // const data = [1, 5, -1, 1, 5, -1];
 
     const [number, setNumber] = useState(null);
     const [selected, setSelected] = useState([]);
     const [data, setData] = useState([4, 5, 6]);
+    const [funnyList, setFunnyList] = useState([]);
+
+
 
 
 
@@ -35,9 +37,7 @@ export default function Test() {
     const dataAbsolute = data.map((p) => Math.abs(p));
 
 
-
-
-    let maxAxisAmplitude = d3.max(dataAbsolute)
+    let maxAxisAmplitude = d3.max(dataAbsolute);
 
     const scaleChart = d3.scaleLinear()
         .domain([0, d3.max(data)])
@@ -55,14 +55,14 @@ export default function Test() {
         // .stroke("#E04836")
         ;
 
-
-
-
     const svgRef = useRef(null);
     const innerWidth = window.innerWidth;
     const innerHeight = window.innerHeight;
     const shapeWidth = 30
     const xdelta = 30
+
+
+
 
 
     useEffect(() => {
@@ -84,7 +84,6 @@ export default function Test() {
         const axis = canvas.append("g")
             .call(axisGenerator)
             .style("stroke", "lightgrey")
-            // .style("line", "white")
             .attr("transform", "translate(50, 350)")
 
         axis.selectAll("line")
@@ -97,16 +96,16 @@ export default function Test() {
             .data(dataAbsolute.entries())
 
             .join("rect")
+            .attr("class", "rect")
             .attr("x", point => point[0] * shapeWidth)
             .attr("y", 0)
             .attr("width", shapeWidth)
             .attr("height", 0)
-            .attr("fill", "black")
+            // .attr("fill", "black")
             .attr("fill", function (point) {
-                if (selected.includes(point[0])) {
-                    return "white"
-                };
-                return (data[point[0]] > 0 ? "teal" : "olive")
+
+                return (point[1] > 0 ? "teal" : "olive")
+
 
             })
 
@@ -116,46 +115,17 @@ export default function Test() {
             .attr("transform", "translate(50, 350)")
 
 
-            .on("click", function () {
-                let selectedList = selected.slice();
-                console.log("Is datapoint ", d3.select(this).data()[0][0], " missing from the list ? ", !selectedList.includes(d3.select(this).data()[0][0]))
-                if (!selectedList.includes(d3.select(this).data()[0][0])) {
-                    selectedList.push(d3.select(this).data()[0][0]);
-                    console.log("list as set in selected", selectedList)
-                }
-                else {
 
-                    let tobeRemoved = selectedList.indexOf(d3.select(this).data()[0][0]);
-                    selectedList.splice(tobeRemoved, 1);
-
-
-                }
-
-                setSelected(selectedList);
-                console.log("Datapoint ", d3.select(this).data()[0][0], " has been amended.");
-                console.log("Inside the MouseIn Gate 1, value of selected at end of IF: ", selected);
-            })
             .transition()
             .attr("height", point => scaleChart(point[1]))
             .attr("y", point => data[point[0]] > 0 ? -scaleChart(point[1]) : 0)
-            .style("fill", function (point) {
-                if (selected.includes(point[0])) {
-                    return "white"
-                };
-                return (data[point[0]] > 0 ? "teal" : "olive")
 
-            })
             .duration(1200)
 
             .delay(function (point) { return (250 + Math.abs(point[0] * 200)) })
             .ease(d3.easeCubicInOut)
 
 
-
-
-
-
-        console.log("Outside the function Selected List: ", selected);
 
         const line = d3.line()
             .defined(d => d != null)
@@ -165,6 +135,9 @@ export default function Test() {
             ;
 
 
+
+        // console.log("Outside the function Selected List: ", selected);
+
         d3.select("svg")
             .append("path")
             .attr("d", line)
@@ -172,17 +145,6 @@ export default function Test() {
             .style("stroke", "white")
             .style("stroke-width", 3)
             .attr("transform", "translate(65, 350)")
-
-
-        const path2 = canvas.append("g");
-        path2
-            .append("path")
-
-            .attr("d", line)
-            .style("fill", "none")
-            .style("stroke", "#17becf")
-            .style("stroke-width", 3)
-            .attr("transform", "translate(65, 850)")
 
 
         const circle = canvas.append("g");
@@ -218,59 +180,64 @@ export default function Test() {
             .text(d => d[1]);
 
 
-        const circle2 = canvas.append("g");
-        circle2
-            .selectAll("circle")
-            .data(data.entries())
-            .join("circle")
-            .attr("cx", point => point[0] * shapeWidth + (shapeWidth / 2))
-            .attr("cy", point => point[1] >= 0 ? (-scaleChart(point[1]) + 18) : (- scaleChart(point[1]) - 8))
-            .attr("r", 10)
-            // .attr("fill", "black")
-            .style("fill", function (point) {
-                console.log("Point Circle", point)
-                if (selected.includes(point[0])) {
-                    return "red"
-                }
-                return "black"
-            })
-            .on("click", function (point) {
-                let selectedList = selected.slice();
-                console.log("this", d3.select(this).data()[0][0])
-                if (!selectedList.includes(d3.select(this).data()[0][0])) {
-                    selectedList.push(d3.select(this).data()[0][0]);
 
-                }
-                else {
+        // const funnyLine = d3.line()
+        //     .x(point => point[0] * shapeWidth)
+        //     .y(point => (point[1] >= 0 ? (-scaleChart(point[1]) + 18) : (- scaleChart(point[1]) - 8)))
+        //     .curve(d3.curveCardinal)(funnyList.entries())
 
-                    let tobeRemoved = selectedList.indexOf(d3.select(this).data()[0][0]);
-                    selectedList.splice(tobeRemoved, 1);
-                }
-
-                setSelected(selectedList);
-            })
-            .attr("transform", "translate(50, 845)")
+        //     ;
 
 
 
+        // const path2 = canvas.append("g");
+        // path2
+        //     .append("path")
+        //     // .data(funnyList.entries())
+        //     .attr("d", funnyLine)
+        //     .attr("class", "path2")
+        //     .style("fill", "none")
+        //     .style("stroke", "#17becf")
+        //     .style("stroke-width", 3)
+        //     .attr("transform", "translate(65, 850)")
 
-        const text2 = canvas.append("g");
-        text2
-            .selectAll("text")
-            .data(data.entries())
-            .join("text")
-            .attr("fill", "white")
-            .attr("font-size", 12)
-            .attr("font-weight", "bold")
-            .attr("x", point => (point[0] * shapeWidth + (shapeWidth / 2)))
-            .attr("y", point => (point[1] >= 0 ? (-scaleChart(point[1]) + 18) : (- scaleChart(point[1]) - 8)))
+        // const circle2 = canvas.append("g");
+        // circle2
+        //     .selectAll("circle")
+        //     .data(funnyList.entries())
+        //     .join("circle")
+        //     .attr("class", "circle2")
+        //     .attr("cx", point => point[0] * shapeWidth + (shapeWidth / 2))
+        //     .attr("cy", point => point[1] >= 0 ? (-scaleChart(point[1]) + 18) : (- scaleChart(point[1]) - 8))
+        //     .attr("r", 10)
+        //     .style("fill", function (point) {
+
+        //         return "black"
+        //     })
+        //     .attr("transform", "translate(50, 845)")
 
 
-            .attr("transform", "translate(50, 850)")
-            .attr("text-anchor", "middle")
 
 
-            .text(d => d[1]);
+        // const text2 = canvas.append("g");
+        // text2
+        //     .selectAll("text")
+        //     .data(funnyList.entries())
+        //     .join("text")
+        //     .attr("fill", "white")
+        //     .attr("font-size", 12)
+        //     .attr("font-weight", "bold")
+        //     .attr("x", point => (point[0] * shapeWidth + (shapeWidth / 2)))
+        //     .attr("y", point => (point[1] >= 0 ? (-scaleChart(point[1]) + 18) : (- scaleChart(point[1]) - 8)))
+
+
+        //     .attr("transform", "translate(50, 850)")
+        //     .attr("text-anchor", "middle")
+        //     .text(d => d[1]);
+
+
+
+
 
         const degToRad = (degrees) => {
             return degrees * (Math.PI / (360 / 2))
@@ -308,29 +275,12 @@ export default function Test() {
             .selectAll("pie")
             .data(pie.filter(function (pie) { return pie.data[1] > 0 }))
             .join("path")
+            .attr("class", "pieChart")
             .attr("d", arcGenerator)
             .attr("transform", "translate(750, 245)")
             .style("fill", function (point) {
                 // console.log("Point", point)
-                if (selected.includes(point.data[0])) {
-                    return "white"
-                }
                 return color(point.data[1])
-            })
-            .on("click", function (point) {
-                let selectedList = selected.slice();
-                if (!selectedList.includes(d3.select(this).data()[0].data[0])) {
-                    selectedList.push(d3.select(this).data()[0].data[0]);
-
-                }
-                else {
-
-                    let tobeRemoved = selectedList.indexOf(d3.select(this).data()[0].data[0]);
-                    selectedList.splice(tobeRemoved, 1);
-                }
-
-                setSelected(selectedList);
-
             })
             .style("stroke", "grey")
             .style("stroke-width", 1)
@@ -351,10 +301,6 @@ export default function Test() {
 
             .text(d => d.data[1])
 
-
-
-
-
         const polarLine = d3.line()
             .defined(d => d != null)
             .x(d => (polarArcGenerator.centroid(d)[0] + (polarArcGenerator.centroid(d)[0] * (d.data[1] / maxAxisAmplitude))) / 2)
@@ -371,7 +317,6 @@ export default function Test() {
             .attr("fill", "red")
             .attr("fill-opacity", "0.5")
             // .attr("stroke-opacity", "0.5")
-            // .attr("stroke-width", 3)
             .attr("transform", "translate(745, 800)")
 
 
@@ -408,13 +353,20 @@ export default function Test() {
             .data(polarPie)
 
             .join("text")
-            .attr("fill", "grey")
-            .attr("font-size", 14)
+            .attr("class", "radarLabels")
+            // .attr("fill", "grey")
+
+            .attr("fill", function (point) {
+                return "grey"
+            })
+            .attr("font-size", function (point) {
+                return "14"
+            })
             .attr("font-weight", "bold")
             .attr("d", polarArcGenerator)
             .attr("x", d => (polarArcGenerator.centroid(d)[0] * 1.3))
             .attr("y", d => (polarArcGenerator.centroid(d)[1] * 1.3))
-            .attr("transform", "translate(720, 810)")
+            .attr("transform", "translate(730, 810)")
             .text(d => `Pos ${d.data[0]}`)
 
         const radarMax = canvas.append("g");
@@ -461,13 +413,220 @@ export default function Test() {
             .text(d => d.data[1])
 
 
+        console.log("funnyArray effect 2:", funnyList);
 
+        const funnyLine = d3.line()
+            .x(point => point[0] * shapeWidth)
+            .y(point => (point[1] >= 0 ? (-scaleChart(point[1]) + 18) : (- scaleChart(point[1]) - 8)))
+            .curve(d3.curveCardinal)(funnyList.entries())
+
+            ;
+
+
+
+        const path2 = canvas.append("g");
+        path2
+            .append("path")
+            // .data(funnyList.entries())
+            .attr("d", funnyLine)
+            .attr("class", "path2")
+            .style("fill", "none")
+            .style("stroke", "#17becf")
+            .style("stroke-width", 3)
+            .attr("transform", "translate(65, 850)")
+
+        const circle2 = canvas.append("g");
+        circle2
+            .selectAll("circle")
+            .data(funnyList.entries())
+            .join("circle")
+            .attr("class", "circle2")
+            .attr("cx", point => point[0] * shapeWidth + (shapeWidth / 2))
+            .attr("cy", point => point[1] >= 0 ? (-scaleChart(point[1]) + 18) : (- scaleChart(point[1]) - 8))
+            .attr("r", 10)
+            .style("fill", function (point) {
+
+                return "black"
+            })
+            .attr("transform", "translate(50, 845)")
+
+
+
+
+        const text2 = canvas.append("g");
+        text2
+            .selectAll("text")
+            .data(funnyList.entries())
+            .join("text")
+            .attr("fill", "white")
+            .attr("font-size", 12)
+            .attr("font-weight", "bold")
+            .attr("x", point => (point[0] * shapeWidth + (shapeWidth / 2)))
+            .attr("y", point => (point[1] >= 0 ? (-scaleChart(point[1]) + 18) : (- scaleChart(point[1]) - 8)))
+
+
+            .attr("transform", "translate(50, 850)")
+            .attr("text-anchor", "middle")
+            .text(d => d[1]);
+    }
+        , [svgRef.current, data, funnyList])
+
+    useEffect(() => {
+        const funnyData = function () {
+            let funnyArray = data.slice();
+            console.log("funny data fired:", funnyArray);
+            for (let item in selected) {
+                console.log("funny data selected:", selected[item], typeof selected[item], funnyArray[selected[item]]);
+                funnyArray[selected[item]] = 0;
+            };
+            console.log("funny array set:", funnyArray);
+            setFunnyList(funnyArray);
+        };
+        funnyData();
+        console.log("funnyArray Effect 1:", funnyList);
+
+        // d3.selectAll(".path2")
+        //     .attr("d", funnyLine)
 
     }
         , [svgRef.current, data, selected])
 
+
+    useEffect(() => {
+        console.log("Select use effect on fire")
+        // funnyData();
+
+        d3.selectAll(".rect")
+            .style("fill", function (point) {
+                if (selected.includes(point[0])) {
+                    return "white"
+                };
+                return (data[point[0]] > 0 ? "teal" : "olive")
+
+            })
+
+            .on("click", function () {
+                let selectedList = selected.slice();
+                console.log("Is datapoint ", d3.select(this).data()[0][0], " missing from the list ? ", !selectedList.includes(d3.select(this).data()[0][0]))
+                if (!selectedList.includes(d3.select(this).data()[0][0])) {
+                    selectedList.push(d3.select(this).data()[0][0]);
+                    console.log("list as set in selected", selectedList)
+                }
+                else {
+
+                    let tobeRemoved = selectedList.indexOf(d3.select(this).data()[0][0]);
+                    selectedList.splice(tobeRemoved, 1);
+
+
+                }
+
+                setSelected(selectedList);
+                // funnyData();
+                console.log("Datapoint ", d3.select(this).data()[0][0], " has been amended.");
+                console.log("Inside the MouseIn Gate 1, value of selected at end of IF: ", selected);
+            })
+
+
+
+        // d3.selectAll(".path2")
+        //     .attr("d", funnyLine)
+
+
+        d3.selectAll(".circle2")
+            .data(funnyList.entries())
+            .style("fill", function (point) {
+                // console.log("Point Circle", point)
+                if (selected.includes(point[0])) {
+                    return "red"
+                }
+                return "black"
+            })
+            .on("click", function (point) {
+                let selectedList = selected.slice();
+                console.log("this", d3.select(this).data()[0][0])
+                if (!selectedList.includes(d3.select(this).data()[0][0])) {
+                    selectedList.push(d3.select(this).data()[0][0]);
+
+                }
+                else {
+
+                    let tobeRemoved = selectedList.indexOf(d3.select(this).data()[0][0]);
+                    selectedList.splice(tobeRemoved, 1);
+                }
+
+                setSelected(selectedList);
+                // funnyData();
+            })
+
+        d3.selectAll(".pieChart")
+            //     
+            .on("click", function (point) {
+                let selectedList = selected.slice();
+                if (!selectedList.includes(d3.select(this).data()[0].data[0])) {
+                    selectedList.push(d3.select(this).data()[0].data[0]);
+
+                }
+                else {
+
+                    let tobeRemoved = selectedList.indexOf(d3.select(this).data()[0].data[0]);
+                    selectedList.splice(tobeRemoved, 1);
+                }
+
+                setSelected(selectedList);
+                // funnyData();
+
+            })
+            .style("fill", function (point) {
+                if (selected.includes(point.data[0])) {
+                    return "white"
+                };
+                console.log("datapoint", point.data[1]);
+                return (point.data[1] > 0 ? "teal" : "olive")
+
+            })
+
+        d3.selectAll(".radarLabels")
+            .on("click", function (point) {
+                let selectedList = selected.slice();
+                // console.log("this polar", d3.select(this).data()[0].data[0])
+                if (!selectedList.includes(d3.select(this).data()[0].data[0])) {
+                    selectedList.push(d3.select(this).data()[0].data[0]);
+
+                }
+                else {
+
+                    let tobeRemoved = selectedList.indexOf(d3.select(this).data()[0].data[0]);
+                    selectedList.splice(tobeRemoved, 1);
+                }
+
+                setSelected(selectedList);
+                // funnyData();
+            })
+
+            .attr("fill", function (point) {
+                if (selected.includes(point.data[0])) {
+                    return "white"
+                };
+                return (point.data[1] > 0 ? "teal" : "olive")
+
+            })
+
+            .attr("font-size", function (point) {
+                // console.log("Point Polar", point.data[0])
+                if (selected.includes(point.data[0])) {
+                    return "16"
+                }
+                return "14"
+            })
+
+        console.log("funnyArray effect 3:", funnyList);
+    }
+        , [svgRef.current, data, selected, funnyList])
+
+
+
     return (<><svg ref={svgRef} />
         <input type="number" onChange={handleNumberSet} value={number}></input>
         <button onClick={handleElementAdd}>Add</button>
-    </>);
+    </>)
 }
