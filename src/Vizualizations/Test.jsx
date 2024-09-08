@@ -1,4 +1,6 @@
 import * as d3 from "d3";
+
+
 import { useEffect, useRef, useState } from "react";
 
 export default function Test() {
@@ -8,6 +10,7 @@ export default function Test() {
     const [number, setNumber] = useState(null);
     const [selected, setSelected] = useState([]);
     const [data, setData] = useState([4, 5, 6]);
+    const [label, setLabel] = useState([]);
 
 
 
@@ -64,6 +67,12 @@ export default function Test() {
     const shapeWidth = 30
     const xdelta = 30
 
+    useEffect(() => {
+        fetch('https://dummyjson.com/products')
+    .then(res => res.json())
+.then(res => {setData(res.products.map(p=>p.stock).slice(0,10));setLabel(res.products.map(p=>p.title).slice(0,10))
+        console.log(res.products.map(p=>p.stock));console.log(res.products.map(p=>p.title))})
+    },[])
 
     useEffect(() => {
         const canvas = d3
@@ -468,6 +477,7 @@ export default function Test() {
 
     return (<><svg ref={svgRef} />
         <input type="number" onChange={handleNumberSet} value={number}></input>
+
         <button onClick={handleElementAdd}>Add</button>
     </>);
 }

@@ -1,0 +1,46 @@
+.inputbox{display: flex;}
+
+.label{
+    color: green;
+    font-size: 12px;
+}
+
+.labelbox{
+    width: 250px;
+    padding-left: 10px;
+    
+}
+
+.formInput{
+    width: 300px;
+    font-size: 10px;
+}
+
+.formInput:focus {
+    font-weight: bold;    
+}
+.formSelecttheTypeofRequest{
+    display: flex;
+    flex-direction: column;
+}
+.firstcontainer{
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 5px;
+    background-color:rgb(198, 220, 248);
+}
+.secondcontainer{
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 5px;
+    background-color:rgb(158, 201, 247);
+}
+
+.thirdcontainer{
+    background-color:rgb(130, 184, 241);
+}
+
+tr{background-color:rgb(130, 184, 241) 
+    ;border-color:rgb(130, 184, 241)}
+
+td{background-color:white;border-color: black;text-align: center;}
